@@ -1,3 +1,8 @@
-# causal-ehr
+# Learning Treatment Policies From Multimodal Electronic Health Records
+This repository contains the code accompanying the paper: 'Learning Treatment Policies From Multimodal Electronic Health Records.'
 
-This repository will contain the code related to the paper 'Learning Treatment Policies From Multimodal Electronic Health Records' currently under review.
+## Structure
+...
+
+## Usage
+..
