@@ -12,3 +12,4 @@ This repository contains the code accompanying the paper: `Learning Treatment Po
 ## Usage
 The code requires Python 3 and standard scientific Python packages, including PyTorch, NumPy, pandas, nltk and transformers.  
 Run the notebooks in `data/` to generate (or load) datasets and embeddings, then use the notebooks in the root directory to train models and evaluate policies.
+The demo notebooks are configured to run on **SynSum** by default. The same notebooks also support the other datasets in `data/` which requires changing the dataset-specific arguments (e.g., dataset name and variables) in the notebook cells.
