@@ -1,6 +1,7 @@
 # Datasets
 /data/datasets/
 /data/source_data/
+/data/checkpoints/
 
 # Python bytecode
 *.pyc

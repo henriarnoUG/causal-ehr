@@ -2,7 +2,7 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import numpy as np
-from data_utils import set_seed
+from library.data_utils import set_seed
 
 
 ####################################################################################################################################
