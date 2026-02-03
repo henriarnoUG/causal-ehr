@@ -246,3 +246,78 @@ def train_cate(model, train_loader, val_loader, device, lr=3e-4,
     if best_state is not None:
         model.load_state_dict(best_state)
     return model, {"val_loss": best_val}
+
+
+####################################################################################################################################
+
+
+def train_predictive(model, train_loader, val_loader, device, lr=3e-4, 
+                     weight_decay=1e-5, max_epochs=50, patience=5, seed=0):
+    """ Expects loaders that yield (phi, y)."""
+    set_seed(seed)
+
+    # init
+    model.to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    criterion = nn.MSELoss(reduction="mean")
+
+    # early stopping
+    best_state, best_val, patience_left = None, float("inf"), patience
+
+    # loop over epochs
+    for epoch in range(1, max_epochs + 1):
+        model.train()
+        running_loss, n_train = 0.0, 0
+
+        # progress
+        with tqdm(train_loader, desc=f"Epoch {epoch}/{max_epochs}", leave=False) as pbar:
+            for phi, y in pbar:
+
+                # forward pass
+                phi, y = phi.to(device), y.to(device)
+                preds = model(phi)
+
+                # backward pass
+                loss = criterion(preds, y)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                # progress
+                bs = y.size(0)
+                running_loss += loss.item() * bs
+                n_train += bs
+                pbar.set_postfix(loss=running_loss / n_train)
+
+        # validation loop
+        model.eval()
+        val_sum, n_val = 0.0, 0
+        with torch.no_grad():
+            for phi_val, y_val in val_loader:
+                phi_val, y_val = phi_val.to(device), y_val.to(device)
+                preds_val = model(phi_val)
+                loss_val = criterion(preds_val, y_val)
+
+                # progress
+                bs_val = y_val.size(0)
+                val_sum += loss_val.item() * bs_val
+                n_val += bs_val
+        val_mse = val_sum / max(n_val, 1)
+
+        # progress
+        tqdm.write(f"Epoch {epoch:02d} | val_mse={val_mse:.6f}")
+
+        # early stopping
+        if val_mse + 1e-9 < best_val:
+            best_val = val_mse
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            patience_left = patience
+        else:
+            patience_left -= 1
+            if patience_left == 0:
+                break
+
+    # reset best state
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    return model, {"val_loss": best_val}

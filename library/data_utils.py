@@ -87,8 +87,29 @@ class CateDataset(Dataset):
         return phi, x, target
 
 
-##########################################################################################################
+class PredictiveDataset(Dataset):
+    def __init__(self, df, confounders_tabular, embeddings):
+        self.df = df
+        self.confounders_tabular = confounders_tabular
+        self.embeddings = embeddings
+        self.target_col = 'Y'
 
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        row = self.df.iloc[idx]
+
+        data_idx = row.name
+        emb = self.embeddings[data_idx].to(torch.float32)
+        device = self.embeddings.device
+        x_tab = torch.tensor(row[self.confounders_tabular].astype(np.float32).to_numpy(), dtype=torch.float32, device=device)
+        phi = torch.cat([emb, x_tab])
+        
+        target = torch.tensor(float(row[self.target_col]), dtype=torch.float32)
+        return phi, target
+
+##########################################################################################################
 
 def make_nuisance_loaders(train_df, val_df, confounders, batch_size):
     train_ds = NuisanceDataset(train_df, confounders)
@@ -97,7 +118,6 @@ def make_nuisance_loaders(train_df, val_df, confounders, batch_size):
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
     return train_loader, val_loader
 
-
 def make_cate_loaders(train_df, val_df, confounders_tabular, confounders_full, embeddings, target_col, batch_size):
     train_ds = CateDataset(train_df, confounders_tabular, confounders_full, embeddings, target_col)
     val_ds = CateDataset(val_df, confounders_tabular, confounders_full, embeddings, target_col)
@@ -105,8 +125,14 @@ def make_cate_loaders(train_df, val_df, confounders_tabular, confounders_full, e
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
     return train_loader, val_loader
 
-##########################################################################################################
+def make_predictive_loaders(train_df, val_df, confounders_tabular, embeddings, batch_size):
+    train_ds = PredictiveDataset(train_df, confounders_tabular, embeddings)
+    val_ds = PredictiveDataset(val_df, confounders_tabular, embeddings)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
+    return train_loader, val_loader
 
+##########################################################################################################
 
 @torch.no_grad()
 def score_propensity(df, confounders, model, device):
