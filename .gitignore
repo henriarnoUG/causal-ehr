@@ -2,6 +2,7 @@
 /data/datasets/
 /data/source_data/
 /data/checkpoints/
+/data/embeddings/
 
 # Python bytecode
 *.pyc
