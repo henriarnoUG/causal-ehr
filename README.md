@@ -5,7 +5,7 @@ The goal is to learn treatment policies from multimodal electronic health record
 
 1. **Risk-based modeling**, which prioritizes patients by predicted baseline risk.
 2. **Representation-based causal modeling**, which applies causal treatment effect estimators directly to multimodal representations.
-3. **Annotation-assisted causal modeling (\textsc{AACE})**, which uses expert-provided annotations during training to support confounding adjustment.
+3. **Annotation-assisted causal modeling (AACE)**, which uses expert-provided annotations during training to support confounding adjustment.
 
 ## Structure
 - `data/`: notebooks for preparing datasets and embeddings (data files are not tracked).
